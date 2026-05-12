@@ -1,112 +1,89 @@
-\cleardoublepage % memastikan bab baru dimulai di halaman ganjil (kanan)
+\cleardoublepage
 \chapter{PENDAHULUAN}
 \label{chap:pendahuluan}
+
 % --- Latar Belakang ---
 \section{Latar Belakang}
-Subbab ini menjelaskan dasar pemikiran, motivasi, kebutuhan, alasan, atau urgensi pemilihan masalah tugas akhir. Subbab ini berisi penjelasan ringkas tentang kondisi atau situasi yang ada saat ini terkait dengan topik yang dibahas. Tujuan utamanya adalah untuk memberikan informasi secukupnya kepada pembaca agar memahami topik yang akan dibahas. Dalam subbab ini, jelaskan hal-hal berikut ini:
-\begin{enumerate}
-\item	Kondisi atau situasi topik yang dibahas beserta permasalahannya, misalnya tentang pengelolaan informasi di fasilitas kesehatan daerah pedesaan saat ini dan masalah yang dihadapi, berdasarkan hasil survei atau wawancara dengan pihak terkait.
-\item	Urgensi atau pentingnya penyelesaian masalah tersebut, misalnya dampak negatif yang ditimbulkan jika masalah tersebut tidak diselesaikan.
-\item	Berbagai solusi yang telah diterapkan maupun solusi yang memungkinkan untuk diterapkan untuk menyelesaikan masalah tersebut, berdasarkan hasil studi literatur, wawancara dengan pihak terkait, atau kunjungan lapangan.
-\item   Kelemahan atau kekurangan dari solusi yang telah diterapkan atau yang memungkinkan untuk diterapkan tersebut, yang menjadi dasar pemikiran dalam merumuskan masalah tugas akhir.
-\end{enumerate}
-Latar belakang dapat ditulis dalam 2-3 halaman. Penulisan latar belakang masalah yang baik akan mengantarkan pembaca kepada pemahaman yang jelas tentang topik yang akan dibahas, 
-sehingga pembaca dapat mengikuti pembahasan pada subbab-subbab berikutnya dengan baik. Oleh karena itu, 
-penulis diharapkan melakukan investigasi yang mendalam untuk mengumpulkan fakta-fakta yang relevan dengan topik yang dibahas, 
-baik melalui studi literatur, wawancara dengan pihak terkait, maupun kunjungan lapangan. Hasil studi ini dijelaskan secara \emph{ringkas} di dalam subbab ini.
-Penjelasan hasil studi literatur yang komprehensif dapat dijabarkan di Bab II Studi Literatur secara sistematis.
 
-Dalam menulis latar belakang, hindari penulisan yang bersifat terlalu umum atau terlalu luas cakupannya sehingga sulit untuk dihubungkan dengan topik yang dibahas dalam tugas akhir,
-seperti:
-\begin{enumerate}
-    \item "Pentingnya teknologi informasi dalam kehidupan manusia."
-    \item "Perkembangan pesat teknologi \emph{artificial intelligence} di era digital."
-    \item "Tantangan dalam pengelolaan data besar (\emph{big data}) di berbagai sektor industri."
-    \item "Peran teknologi informasi dalam meningkatkan kualitas layanan kesehatan."
-\end{enumerate}
-Penulisan yang terlalu umum atau luas cakupannya akan menyulitkan penulis dalam merumuskan masalah, tujuan, metodologi, dan evaluasi tugas akhir.
+Perkembangan \textit{Large Language Model} (LLM) modern didorong oleh peningkatan eksponensial pada jumlah parameter dan volume data pelatihan.
+Berdasarkan \textit{scaling laws} \cite{DBLP:journals/corr/abs-2001-08361}, performa model LLM meningkat secara prediktif seiring dengan eskalasi komputasi, ukuran dataset, dan jumlah parameter.
+Lebih lanjut, analisis empiris mengenai pelatihan \textit{compute-optimal} \cite{NEURIPS2022_c1e2faff} memperbarui paradigma ini dengan membuktikan bahwa untuk mengoptimalkan komputasi, ukuran model dan jumlah token pelatihan harus diskalakan secara proporsional.
+Implikasinya, LLM masa kini harus dilatih menggunakan triliunan token, yang secara fundamental menghasilkan beban komputasi masif dan melampaui kapasitas perangkat keras tunggal.
 
-Jika ada referensi yang digunakan dalam penulisan latar belakang, cantumkan referensi tersebut dengan benar menggunakan \texttt{biblatex} sesuai dengan contoh penulisan kutipan dan daftar pustaka yang telah disediakan dalam template ini.
-Sebagai contoh, pada paragraf berikut ini terdapat kutipan dari dua referensi yang berbeda \autocite{laudon2020, pressman2019}. 
-Ada dua format penulisan sitasi yang dapat digunakan, yaitu format naratif dan format parentetik.
-Contoh penulisan kutipan dengan format naratif adalah sebagai berikut:
-\begin{displayquote}
-Menurut \textcite{laudon2020}, sistem informasi adalah kombinasi dari teknologi informasi dan aktivitas orang yang menggunakan teknologi tersebut untuk mendukung operasi dan manajemen organisasi.
-\end{displayquote}
-Contoh penulisan kutipan dengan format parentetik adalah sebagai berikut:
-\begin{displayquote}
-    Sistem informasi merupakan kombinasi dari teknologi informasi dan aktivitas orang yang menggunakan teknologi tersebut untuk mendukung operasi dan manajemen organisasi \autocite{laudon2020}.
-\end{displayquote}
+Menghadapi eskalasi kebutuhan komputasi tersebut, adopsi arsitektur pelatihan terdistribusi (\textit{distributed training}) menjadi suatu keharusan untuk memfasilitasi paralelisasi beban kerja.
+Namun, infrastruktur terdistribusi \textit{State of the Art} (SOTA) saat ini, seperti Megatron-LM \cite{DBLP:journals/corr/abs-1909-08053}, PyTorch FSDP \cite{zhao2023fsdp}, dan arsitektur keluarga ZeRO \cite{DBLP:journals/corr/abs-2104-07857}, dihadapkan pada dua tantangan performa (\textit{bottleneck}) utama yang saling beririsan:
+
+\begin{itemize}
+    \item \textbf{Saturasi Komunikasi Jaringan:} Sinkronisasi gradien antar-\textit{node} yang padat (\textit{dense synchronization}) memicu komunikasi data masif yang seringkali melampaui kapasitas \textit{bandwidth} interkoneksi GPU. Meskipun kompresi gradien tradisional telah diusulkan \cite{DBLP:journals/corr/abs-1712-01887}, implementasinya pada LLM yang sangat bergantung pada \textit{optimizer} kompleks seperti Adam mengharuskan sinkronisasi \textit{state} yang tetap membebani jaringan \cite{DBLP:journals/corr/abs-2102-02888}.
+    \item \textbf{Latensi \textit{Input/Output} (I/O):} Untuk mengatasi keterbatasan memori GPU selama pelatihan, arsitektur modern mengandalkan mekanisme \textit{memory offloading} dan penyimpanan \textit{state} model (\textit{checkpointing}) ke media penyimpanan sekunder \cite{DBLP:journals/corr/abs-2104-07857}. Pemindahan tensor model berukuran masif secara asinkron dan terfragmentasi ini menghasilkan beban operasi tulis acak (\textit{random writes}) intensif yang memicu latensi tinggi dan gagal ditangani secara efisien oleh sistem file konvensional.
+\end{itemize}
+
+Akibatnya, optimalisasi parsial yang hanya berfokus pada salah satu lapisan (jaringan atau penyimpanan) tidak akan menghasilkan utilisasi perangkat keras yang maksimal.
+Siklus komputasi GPU seringkali terhenti (\textit{compute stall}) akibat hambatan operasional (\textit{overhead}) dari lapisan yang tidak teroptimasi.
+
+Merespons kesenjangan tersebut, diperlukan sebuah pendekatan holistik yang mampu mengeliminasi kedua hambatan infrastruktur tersebut secara simultan.
+Penelitian ini mengusulkan "Arsitektur Sistem Pelatihan LLM Terdistribusi Berbasis \textit{Log-Structured Storage} dan \textit{Sparse Gradient Aggregation}".
+Secara arsitektural, pendekatan \textit{Sparse Gradient Aggregation} diimplementasikan untuk mereduksi \textit{overhead} jaringan secara drastis dengan membatasi sinkronisasi komunikasi hanya pada elemen gradien yang paling signifikan.
+Sebagai sistem yang terintegrasi, metode ini dipadukan dengan implementasi \textit{Log-Structured Storage} di tingkat I/O, yang secara intrinsik mengonversi operasi tulis acak menjadi operasi tulis sekuensial (\textit{sequential appends}).
+Melalui integrasi kedua mekanisme ini, penelitian ini bertujuan untuk merancang sebuah sistem yang dapat memaksimalkan \textit{throughput} I/O sekaligus meminimalkan beban jaringan, sehingga menghasilkan performa pelatihan terdistribusi yang tangguh, efisien, dan memiliki skalabilitas tinggi.
+
 % --- Rumusan Masalah ---
 \section{Rumusan Masalah}
-Rumusan Masalah berisi masalah utama yang dibahas dalam tugas akhir. Rumusan masalah yang baik memiliki struktur sebagai berikut:
-\begin{enumerate}
-\item	Pokok persoalan dari kondisi atau situasi yang ada saat ini. Dengan kata lain, jelaskan kelemahan atau kekurangan dari kondisi, situasi, atau solusi yang dijelaskan pada latar belakang. Ini merupakan pokok rumusan masalah.
-\item	Elaborasi lebih lanjut urgensi penyelesaian masalah tersebut (mengapa penting untuk diselesaikan dan akibat yang dapat terjadi jika tidak diselesaikan).
-\item	Usulan singkat terkait dengan solusi yang ditawarkan untuk menyelesaikan persoalan.
-Penting untuk diperhatikan bahwa persoalan yang dideskripsikan pada subbab ini akan dipertanggungjawabkan di bab Evaluasi (apakah terselesaikan atau tidak).
-\end{enumerate}
-Hindari penulisan rumusan masalah yang terlalu umum atau terlalu luas cakupannya sehingga sulit untuk diselesaikan dalam jangka waktu pelaksanaan tugas akhir, 
-seperti:
-\begin{enumerate}
-    \item "Bagaimana cara meningkatkan kualitas layanan kesehatan di Indonesia?"
-    \item "Bagaimana cara mengoptimalkan penggunaan energi di perkotaan?"
-    \item "Bagaimana cara mengurangi kemacetan lalu lintas di kota besar?"
-    \item "Bagaimana cara membangun sistem irigasi sawah menggunakan \emph{AI}?"
-\end{enumerate}
-Rumusan masalah yang baik dan spesifik akan memudahkan penulis dalam menentukan tujuan, metodologi, dan evaluasi tugas akhir.
 
-Selain itu, hindari menuliskan pertanyaan yang merupakan sebuah keniscayaan yang harus dijawab atau dikerjakan 
-dalam pelaksanaan tugas akhir, seperti:
+Berdasarkan latar belakang yang telah diuraikan, rumusan masalah dalam penelitian ini adalah sebagai berikut:
 \begin{enumerate}
-    \item "Bagaimana cara melakukan analisis kebutuhan sistem informasi rumah sakit?"
-    \item "Bagaimana cara merancang basis data untuk aplikasi X?"
-    \item "Bagaimana cara mengimplementasikan \textit{large language model} untuk deteksi penyakit Y?"
-    \item "Bagaimana cara menguji sistem penyiraman tanaman berbasis IoT yang akan dibuat?"
+    \item Bagaimana mereduksi beban komunikasi jaringan (\textit{network overhead}) akibat sinkronisasi gradien yang padat secara efisien pada pelatihan \textit{Large Language Model} (LLM) terdistribusi menggunakan metode \textit{Sparse Gradient Aggregation}?
+    \item Bagaimana mengatasi tingginya latensi I/O dan fragmentasi operasi tulis acak (\textit{random writes}) pada media penyimpanan sekunder saat proses \textit{memory offloading} dengan mengimplementasikan sistem \textit{Log-Structured Storage}?
+    \item Bagaimana mengintegrasikan mekanisme \textit{Sparse Gradient Aggregation} dan \textit{Log-Structured Storage} ke dalam sebuah arsitektur pelatihan terdistribusi yang holistik guna mengeliminasi penghentian komputasi GPU (\textit{compute stall})?
+    \item Bagaimana tingkat efisiensi, skalabilitas, dan performa arsitektur yang diusulkan jika dibandingkan dengan infrastruktur pelatihan terdistribusi \textit{State of the Art} (SOTA) seperti DeepSpeed atau PyTorch FSDP?
 \end{enumerate}
-Kegiatan analisis, perancangan, implementasi, dan pengujian merupakan tahapan yang harus dilakukan dalam pelaksanaan tugas akhir,
-sehingga pertanyaan-pertanyaan tersebut tidak perlu dimasukkan ke dalam rumusan masalah.
 
 % --- Tujuan ---
 \section{Tujuan}
-Tuliskan \textbf{tujuan utama} dan/atau tujuan detail yang akan dicapai dalam pelaksanaan tugas akhir. 
-Fokuskan isi subbab ini pada hasil akhir yang ingin diperoleh setelah tugas akhir diselesaikan 
-terkait dengan penyelesaian persoalan pada rumusan masalah. 
-Penting untuk diperhatikan bahwa tujuan yang dideskripsikan pada subbab ini akan dipertanggungjawabkan 
-di akhir pelaksanaan tugas akhir. Oleh karena itu, tuliskan juga \emph{kriteria keberhasilan} tugas akhir ini.
+
+Tujuan utama dari tugas akhir ini adalah mengimplementasikan dan mengevaluasi arsitektur sistem pelatihan \emph{Large Language Model} terdistribusi yang menggabungkan \emph{Log-Structured Storage} dan \emph{Sparse Gradient Aggregation}.
+Adapun kriteria keberhasilan dari tugas akhir ini meliputi:
+\begin{enumerate}
+    \item \textbf{Reduksi \emph{Overhead} Jaringan:} Tercapainya penurunan volume data yang ditransmisikan dan waktu sinkronisasi antar-\emph{node} secara terukur melalui implementasi \emph{Sparse Gradient Aggregation}, tanpa menyebabkan degradasi yang signifikan pada konvergensi model.
+    \item \textbf{Peningkatan \emph{Throughput} I/O:} Berkurangnya latensi pada proses \emph{memory offloading} dan \emph{checkpointing} melalui konversi operasi tulis acak menjadi operasi sekuensial menggunakan \emph{Log-Structured Storage}, yang dibuktikan dengan peningkatan utilisasi \emph{bandwidth} penyimpanan sekunder (seperti NVMe/SSD).
+    \item \textbf{Minimalisasi \emph{Compute Stall}:} Meningkatnya utilisasi komputasi GPU secara keseluruhan selama proses pelatihan, sebagai hasil dari eliminasi hambatan (\emph{bottleneck}) silang antara lapisan jaringan dan sistem I/O.
+    \item \textbf{Keunggulan \emph{Benchmarking}:} Terbuktinya efisiensi arsitektur yang diusulkan melalui peningkatan metrik performa pelatihan (seperti \emph{throughput} token per detik) ketika dibandingkan secara empiris dengan kerangka kerja \emph{State of the Art} (SOTA) yang ada (misalnya DeepSpeed atau PyTorch FSDP).
+\end{enumerate}
 
 % --- Batasan Masalah ---
 \section{Batasan Masalah}
-Tuliskan batasan-batasan yang diambil dalam pelaksanaan tugas akhir. Batasan ini dapat dihindari (bersifat opsional, tidak perlu ada) jika topik atau judul tugas akhir dibuat cukup spesifik.
 
-% --- Metodologi Pengerjaan TA ---
-\section{Metodologi}
-Tuliskan semua tahapan yang akan dilalui selama pelaksanaan tugas akhir. 
-Tahapan ini spesifik untuk menyelesaikan persoalan tugas akhir. 
-Berikut adalah contoh metodologi pengerjaan tugas akhir yang dapat diikuti, yaitu meliputi tahapan, langkah-langkah, 
-atau tata cara melakukan:
+Untuk menjaga agar ruang lingkup penelitian tetap terarah dan evaluasi dapat dilakukan secara terukur, batasan masalah yang ditetapkan dalam tugas akhir ini adalah sebagai berikut:
 \begin{enumerate}
-\item	Investigasi pengumpulan fakta di latar belakang untuk merumuskan masalah.
-\item	Pencarian, pengelompokan, dan penapisan literatur atau sumber informasi untuk mengumpulkan informasi yang relevan tentang topik yang diangkat, termasuk teori (konsep atau teori apa saja yang perlu dicari), hal-hal yang telah dicapai oleh orang lain (cara mencari dan kata kuncinya), dan berbagai informasi pendukung, untuk mencari solusi terhadap masalah yang dibahas. Gunakan metodologi yang tepat dalam menggali informasi dan dokumentasikan prosesnya (termasuk rekaman wawancara atau survei) di dalam Lampiran, termasuk tautan ke video atau foto. Hasil penggalian informasi ini akan dijelaskan secara sistematis di Bab II Studi Literatur.
-\item   Analisis kebutuhan pengguna dan sistem berdasarkan hasil investigasi dan studi literatur. Jelaskan metode yang digunakan untuk melakukan analisis kebutuhan, misalnya wawancara, survei, observasi, atau studi kasus. Hasil analisis kebutuhan ini akan dijelaskan secara rinci di Bab III Analisis.
-\item   Perancangan solusi berdasarkan hasil analisis kebutuhan. Jelaskan metode yang digunakan untuk melakukan perancangan, misalnya menggunakan diagram UML, ERD, atau prototyping. Hasil perancangan ini akan dijelaskan secara rinci di Bab IV Perancangan.
-\item   Implementasi solusi berdasarkan hasil perancangan. Jelaskan teknologi, bahasa pemrograman, atau alat yang digunakan untuk mengimplementasikan solusi. Hasil implementasi ini akan dijelaskan secara rinci di Bab V Implementasi.
-\item   Evaluasi terhadap solusi yang telah diimplementasikan. Jelaskan metode pengujian, metrik evaluasi, atau studi kasus yang digunakan untuk menilai keberhasilan solusi. Hasil evaluasi ini akan dijelaskan secara rinci di Bab VI Evaluasi.
-\item   Penarikan kesimpulan dan saran berdasarkan hasil pelaksanaan tugas akhir. Hasil kesimpulan dan saran ini akan dijelaskan secara rinci di Bab VII Kesimpulan dan Saran. 
-\vfill % memaksa konten di atas untuk berada di bagian atas halaman dan menyisakan ruang kosong di bawah konten ini akibat berakhirnya section ini
+    \item \textbf{Fokus Evaluasi Kinerja Sistem:} Penelitian ini berfokus pada metrik kinerja infrastruktur sistem (seperti \emph{throughput} token per detik, utilisasi \emph{bandwidth} I/O, dan latensi jaringan). Evaluasi terhadap kualitas bahasa model yang dilatih (metrik akurasi NLP murni) dibatasi hanya pada pembuktian konvergensi awal (\emph{loss degradation}), bukan untuk mencapai akurasi \emph{State of the Art} (SOTA).
+    \item \textbf{Arsitektur dan Skala Model:} Pengujian arsitektur sistem dibatasi pada model bahasa berbasis arsitektur \emph{Transformer decoder-only} dengan rentang jumlah parameter berskala menengah (misalnya, rentang 1 hingga 7 miliar parameter) yang masih merepresentasikan karakteristik LLM modern.
+    \item \textbf{Lingkungan Perangkat Keras:} Evaluasi dilakukan pada klaster GPU dengan interkoneksi jaringan standar (seperti PCIe atau Ethernet/RoCE) dan media penyimpanan sekunder berbasis \emph{Solid State Drive} (SSD) NVMe. Penelitian tidak mencakup optimasi perangkat keras khusus non-GPU (seperti TPU) atau sistem interkoneksi eksotis tingkat superkomputer (seperti topologi \emph{Torus} khusus).
+    \item \textbf{Cakupan Implementasi dan Bahasa Pemrograman:} Implementasi sistem \textit{Log-Structured Storage} dan \textit{Sparse Gradient Aggregation} dibangun menggunakan bahasa pemrograman C dan C++ untuk menjamin kontrol tingkat rendah (\textit{low-level control}) terhadap manajemen memori dan I/O (\textit{system calls}). Pembandingan (\emph{benchmarking}) performa akan diukur terhadap \textit{baseline} kerangka kerja tingkat tinggi (seperti PyTorch FSDP atau DeepSpeed), dan dibatasi hanya pada fase pelatihan (\emph{training phase}).
+\end{enumerate}
+
+% --- Metodologi Pengerjaan ---
+\section{Metodologi}
+
+Tahapan pelaksanaan penelitian ini dirancang secara sistematis untuk menyelesaikan rumusan masalah, yang meliputi langkah-langkah berikut:
+\begin{enumerate}
+    \item \textbf{Studi Literatur:} Melakukan penelusuran pustaka mendalam terkait arsitektur \textit{Transformer}, \textit{scaling laws} pada LLM, mekanisme \textit{memory offloading} pada kerangka kerja terdistribusi SOTA (seperti DeepSpeed/ZeRO dan FSDP), teknik kompresi gradien, serta prinsip dasar sistem file berbasis \textit{log-structured}.
+    \item \textbf{Analisis dan \textit{Profiling} Sistem:} Melakukan \textit{profiling} performa pada \textit{baseline} sistem pelatihan LLM terdistribusi konvensional untuk mengidentifikasi dan mengkuantifikasi metrik \textit{bottleneck} secara empiris, khususnya pada latensi jaringan (\textit{bandwidth} interkoneksi GPU) dan latensi media penyimpanan sekunder (IOPS dan \textit{throughput} tulis acak).
+    \item \textbf{Perancangan Arsitektur:} Merancang integrasi holistik yang terdiri dari dua subsistem utama: subsistem \textit{Sparse Gradient Aggregation} pada lapisan komunikasi jaringan, dan subsistem abstraksi \textit{Log-Structured Storage} di tingkat I/O untuk menangani operasi persistensi dan \textit{checkpointing}.
+    \item \textbf{Implementasi Tingkat Sistem:} Mengembangkan basis kode arsitektur usulan menggunakan bahasa pemrograman C dan C++. Tahap ini mencakup pemrograman tingkat sistem untuk manajemen I/O langsung pada media penyimpanan (\textit{Log-Structured Storage}) dan antarmuka pemrograman paralel/jaringan tingkat rendah untuk menangani \textit{Sparse Gradient Aggregation}.
+    \item \textbf{Evaluasi dan Pengujian:} Melakukan pengujian eksperimental sistem usulan (komparasi performa terhadap \textit{baseline}). Evaluasi difokuskan pada metrik waktu per iterasi (\textit{step time}), \textit{throughput} token per detik, utilisasi \textit{bandwidth} (jaringan dan I/O), serta pengukuran \textit{validation loss} untuk memastikan stabilitas konvergensi model.
+    \item \textbf{Penarikan Kesimpulan:} Menyusun laporan komprehensif berdasarkan analisis data hasil uji eksperimental dan merumuskan saran konstruktif untuk pengembangan penelitian di masa depan.
 \end{enumerate}
 
 % --- Sistematika Penulisan ---
 \section{Sistematika Penulisan}
-Tuliskan gambaran umum isi dari setiap bab yang ada dalam laporan tugas akhir. Sistematika penulisan ini memberikan panduan bagi pembaca tentang struktur dan alur pembahasan dalam laporan tugas akhir. Berikut adalah contoh sistematika penulisan yang dapat diikuti:
+
+Laporan penelitian ini disusun dengan sistematika penulisan sebagai berikut:
 \begin{enumerate}
-\item	Bab I Pendahuluan: Berisi latar belakang, rumusan masalah, tujuan, batasan masalah, metodologi, dan sistematika penulisan laporan tugas akhir       .
-\item	Bab II Studi Literatur: Berisi kajian pustaka yang relevan dengan topik tugas akhir, termasuk teori-teori, konsep-konsep, dan hasil-hasil penelitian sebelumnya yang                mendukung pelaksanaan tugas akhir.
-\item	Bab III Analisis: Berisi penjelasan tentang analisis masalah dan kebutuhan pengguna serta berbagai alternatif solusinya.
-\item   Bab IV Perancangan: Berisi penjelasan tentang perancangan solusi yang diusulkan, misalnya arsitektur sistem, desain basis data, antarmuka pengguna, dan sebagainya.
-\item	Bab V Implementasi: Berisi penjelasan tentang proses implementasi solusi yang diusulkan, termasuk langkah-langkah yang diambil, teknologi yang digunakan, dan hasil yang diperoleh.
-\item	Bab VI Evaluasi: Berisi analisis dan evaluasi terhadap solusi yang diimplementasikan, termasuk metode pengujian, hal-hal yang disiapkan sebelum pengujian, hasil pengujian, dan penilaian kinerja.                  
-\item   Bab VII Kesimpulan dan Saran: Berisi kesimpulan dari hasil pelaksanaan tugas akhir dan saran untuk pengembangan lebih lanjut.
-\item   Daftar Pustaka: Berisi daftar referensi yang digunakan dalam penyusunan laporan tugas akhir.
-\item   Lampiran: Berisi dokumen-dokumen pendukung seperti kode program, data lengkap hasil pengujian, rekaman wawancara, dan lain-lain. 
+    \item \textbf{Bab I Pendahuluan:} Berisi latar belakang, rumusan masalah, tujuan penelitian, batasan masalah, metodologi pelaksanaan, dan sistematika penulisan laporan tugas akhir.
+    \item \textbf{Bab II Studi Literatur:} Membahas kajian teori dan literatur terkait yang menjadi landasan penelitian, mencakup arsitektur LLM, strategi paralelisasi model dan data, optimasi memori terdistribusi, variasi algoritma kompresi gradien, serta paradigma penyimpanan persisten berkinerja tinggi.
+    \item \textbf{Bab III Analisis Sistem:} Menguraikan hasil \textit{profiling} terhadap infrastruktur pelatihan \textit{baseline}, pembuktian empiris atas hambatan kinerja (\textit{compute stall}) akibat latensi I/O dan saturasi jaringan, serta formulasi kebutuhan untuk arsitektur baru.
+    \item \textbf{Bab IV Perancangan Arsitektur:} Menjelaskan desain konseptual dari sistem yang diusulkan, memuat modifikasi alur komunikasi data melalui \textit{Sparse Gradient Aggregation} dan transformasi mekanisme I/O memori menggunakan \textit{Log-Structured Storage}.
+    \item \textbf{Bab V Implementasi:} Menguraikan rincian teknis dari proses perakitan subsistem menggunakan bahasa C/C++, antarmuka pemrograman sistem (\textit{system calls}) yang digunakan, manajemen perangkat keras keras/GPU, serta algoritma inti yang dikembangkan.
+    \item \textbf{Bab VI Evaluasi dan Pengujian:} Menjabarkan metodologi eksperimen, parameter \textit{benchmarking}, penyajian data komparasi antara sistem usulan dan sistem SOTA, serta analisis keberhasilan berdasarkan metrik performa komputasi dan model.
+    \item \textbf{Bab VII Kesimpulan dan Saran:} Menutup laporan dengan kesimpulan akhir yang menjawab rumusan masalah penelitian, beserta rekomendasi praktis untuk optimasi infrastruktur pelatihan LLM selanjutnya.
 \end{enumerate}
